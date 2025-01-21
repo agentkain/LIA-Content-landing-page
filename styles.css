@@ -1213,8 +1213,6 @@ p {
     color: white;
     padding: 4rem 0 2rem;
     width: 100%;
-    display: flex;
-    justify-content: center;
 }
 
 .site-footer .container {
@@ -1222,9 +1220,6 @@ p {
     max-width: var(--max-width);
     margin: 0 auto;
     padding: 0 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .footer-grid {
@@ -1233,21 +1228,31 @@ p {
     grid-template-columns: 2fr 1fr 1fr;
     gap: 4rem;
     margin-bottom: 3rem;
-    max-width: var(--max-width);
 }
 
 .footer-info {
     max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .footer-logo {
+    display: block;
     height: 40px;
-    margin-bottom: 1.5rem;
+    width: auto;
+}
+
+.footer-logo svg {
+    height: 100%;
+    width: auto;
+    fill: #fff;
 }
 
 .footer-info p {
     color: rgba(255, 255, 255, 0.7);
     font-size: 1rem;
+    line-height: 1.5;
     margin: 0;
 }
 
@@ -1270,6 +1275,7 @@ p {
 .footer-links ul {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 .footer-links li {
@@ -1290,6 +1296,7 @@ p {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 2rem;
     text-align: center;
+    width: 100%;
 }
 
 .footer-bottom p {
@@ -1299,32 +1306,32 @@ p {
 }
 
 @media (max-width: 768px) {
-    .cta-section .container,
-    .site-footer .container {
-        padding: 0 1rem;
-    }
-    
     .footer-grid {
         grid-template-columns: 1fr;
         gap: 2rem;
-        padding: 0 1rem;
-    }
-} 
-
-@media (max-width: 768px) {
-    .phone-link {
-        flex-direction: column;
-        gap: 0.25rem;
+        text-align: center;
     }
 
-    .phone-label {
-        font-size: 1rem;
+    .footer-info {
+        max-width: 100%;
+        align-items: center;
     }
 
-    .phone-number {
-        font-size: 2rem;
+    .footer-contact {
+        text-align: center;
     }
-} 
+
+    .footer-links ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .footer-links li {
+        margin-bottom: 0;
+    }
+}
 
 /* Site Header */
 .site-header {
