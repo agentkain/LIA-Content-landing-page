@@ -332,43 +332,58 @@ function initSectionTracking() {
     if (!sections.length || (!mobileNavItems.length && !desktopNavItems.length)) return;
 
     function updateActiveSection() {
-        const scrollPosition = window.scrollY + window.innerHeight / 3;
+        // Use 1/3 of viewport height for better detection
+        const scrollPosition = window.scrollY + (window.innerHeight / 3);
         
+        let activeSection = null;
+        
+        // Find the current active section
         sections.forEach(section => {
             const sectionTop = section.offsetTop;
             const sectionBottom = sectionTop + section.offsetHeight;
-            const sectionId = section.id;
             
             if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
-                // Update mobile nav
-                mobileNavItems.forEach(item => {
-                    const isActive = item.getAttribute('href') === `#${sectionId}`;
-                    item.classList.toggle('active', isActive);
-                });
-                
-                // Update desktop nav
-                desktopNavItems.forEach(item => {
-                    const isActive = item.getAttribute('href') === `#${sectionId}`;
-                    item.classList.toggle('active', isActive);
-                });
-
-                // Scroll active mobile nav item into view
-                const activeNavItem = document.querySelector('.quick-nav-item.active');
-                if (activeNavItem) {
-                    const navScroll = document.querySelector('.mobile-quick-nav-scroll');
-                    if (navScroll) {
-                        const itemLeft = activeNavItem.offsetLeft;
-                        const itemWidth = activeNavItem.offsetWidth;
-                        const navWidth = navScroll.offsetWidth;
-                        const targetScroll = itemLeft - (navWidth - itemWidth) / 2 + itemWidth / 2 - 40;
-                        navScroll.scrollTo({
-                            left: Math.max(0, targetScroll),
-                            behavior: 'smooth'
-                        });
-                    }
-                }
+                activeSection = section;
             }
         });
+
+        if (activeSection) {
+            const sectionId = activeSection.id;
+            
+            // Update mobile nav
+            mobileNavItems.forEach(item => {
+                const isActive = item.getAttribute('href') === `#${sectionId}`;
+                item.classList.toggle('active', isActive);
+            });
+            
+            // Update desktop nav
+            desktopNavItems.forEach(item => {
+                const isActive = item.getAttribute('href') === `#${sectionId}`;
+                item.classList.toggle('active', isActive);
+
+                // Also update parent items if needed
+                const parentItem = item.closest('.nav-item');
+                if (parentItem) {
+                    parentItem.classList.toggle('active', isActive);
+                }
+            });
+
+            // Scroll active mobile nav item into view
+            const activeNavItem = document.querySelector('.quick-nav-item.active');
+            if (activeNavItem) {
+                const navScroll = document.querySelector('.mobile-quick-nav-scroll');
+                if (navScroll) {
+                    const itemLeft = activeNavItem.offsetLeft;
+                    const itemWidth = activeNavItem.offsetWidth;
+                    const navWidth = navScroll.offsetWidth;
+                    const targetScroll = itemLeft - (navWidth - itemWidth) / 2 + itemWidth / 2 - 40;
+                    navScroll.scrollTo({
+                        left: Math.max(0, targetScroll),
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        }
     }
 
     // Update active section on scroll

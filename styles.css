@@ -604,6 +604,27 @@ body {
     position: relative;
 }
 
+.content-nav a.active {
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+.content-nav a.active::before {
+    content: '';
+    position: absolute;
+    left: -2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 1.5rem;
+    background: var(--accent-color);
+    border-radius: 2px;
+}
+
+.nav-item.active > a {
+    color: var(--accent-color);
+}
+
 .content-nav .nav-header {
     font-size: 0.875rem;
     text-transform: uppercase;
