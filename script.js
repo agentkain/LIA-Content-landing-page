@@ -12,19 +12,22 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 let lastScrollTop = 0;
 const floatingNav = document.querySelector('.floating-nav');
 
-window.addEventListener('scroll', () => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
-    if (scrollTop > lastScrollTop) {
-        // Scrolling down
-        floatingNav.style.transform = 'translateY(-50%) translateX(100%)';
-    } else {
-        // Scrolling up
-        floatingNav.style.transform = 'translateY(-50%) translateX(0)';
-    }
-    
-    lastScrollTop = scrollTop;
-});
+// Only add scroll listener if floating nav exists
+if (floatingNav) {
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > lastScrollTop) {
+            // Scrolling down
+            floatingNav.style.transform = 'translateY(-50%) translateX(100%)';
+        } else {
+            // Scrolling up
+            floatingNav.style.transform = 'translateY(-50%) translateX(0)';
+        }
+        
+        lastScrollTop = scrollTop;
+    });
+}
 
 // Form validation
 const form = document.querySelector('.contact-form');
@@ -81,9 +84,14 @@ document.addEventListener('click', (e) => {
 // Handle active navigation state
 const navLinks = document.querySelectorAll('.content-nav a[href^="#"]');
 const contentWrapper = document.querySelector('.content-sections-wrapper');
-const sections = contentWrapper.querySelectorAll('section[id]');
 
 function setActiveNavItem() {
+    // Exit early if required elements don't exist
+    if (!contentWrapper || !navLinks.length) return;
+    
+    const sections = contentWrapper.querySelectorAll('section[id]');
+    if (!sections.length) return;
+    
     const scrollPosition = window.scrollY;
     
     sections.forEach(section => {
@@ -102,258 +110,106 @@ function setActiveNavItem() {
     });
 }
 
-window.addEventListener('scroll', setActiveNavItem);
-window.addEventListener('load', setActiveNavItem);
+// Only add event listeners if the required elements exist
+if (contentWrapper && navLinks.length) {
+    window.addEventListener('scroll', setActiveNavItem);
+    window.addEventListener('load', setActiveNavItem);
+}
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Calculate and set heights for sticky nav positioning
-    function updateNavConstraints() {
-        const activeCases = document.querySelector('.active-cases');
-        const ctaSection = document.querySelector('.cta-section');
-        
-        if (activeCases && ctaSection) {
-            document.documentElement.style.setProperty('--active-cases-height', `${activeCases.offsetHeight}px`);
-            document.documentElement.style.setProperty('--cta-section-height', `${ctaSection.offsetHeight}px`);
-        }
-    }
-
-    // Update on load and resize
-    updateNavConstraints();
-    window.addEventListener('resize', updateNavConstraints);
-
-    const track = document.querySelector('.carousel-track');
-    const slides = Array.from(track.children);
-    const nextButton = document.querySelector('.carousel-button.next');
-    const prevButton = document.querySelector('.carousel-button.prev');
-    const indicators = document.querySelector('.carousel-indicators');
-    const dots = Array.from(indicators.children);
-
-    let currentIndex = 0;
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    function updateSlidePosition() {
-        const slideWidth = slides[0].getBoundingClientRect().width;
-        const isMobile = window.innerWidth <= 768;
-        
-        // On mobile, use full width slides
-        if (isMobile) {
-            track.style.transform = `translateX(-${currentIndex * 100}%)`;
-        } else {
-            track.style.transform = `translateX(-${slideWidth * currentIndex}px)`;
-        }
-        
-        // Update dots
-        dots.forEach((dot, i) => {
-            dot.classList.toggle('active', i === currentIndex);
-        });
-
-        // Update button states
-        prevButton.disabled = currentIndex === 0;
-        nextButton.disabled = currentIndex === slides.length - 1;
-    }
-
-    function moveToSlide(index) {
-        currentIndex = index;
-        updateSlidePosition();
-    }
-
-    // Touch events for mobile swipe
-    track.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-    });
-
-    track.addEventListener('touchmove', (e) => {
-        touchEndX = e.touches[0].clientX;
-    });
-
-    track.addEventListener('touchend', () => {
-        const difference = touchStartX - touchEndX;
-        if (Math.abs(difference) > 50) { // Minimum swipe distance
-            if (difference > 0 && currentIndex < slides.length - 1) {
-                // Swipe left
-                moveToSlide(currentIndex + 1);
-            } else if (difference < 0 && currentIndex > 0) {
-                // Swipe right
-                moveToSlide(currentIndex - 1);
-            }
-        }
-    });
-
-    // Button click events
-    nextButton.addEventListener('click', () => {
-        if (currentIndex < slides.length - 1) {
-            moveToSlide(currentIndex + 1);
-        }
-    });
-
-    prevButton.addEventListener('click', () => {
-        if (currentIndex > 0) {
-            moveToSlide(currentIndex - 1);
-        }
-    });
-
-    // Dot navigation
-    dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-            moveToSlide(index);
-        });
-    });
-
-    // Initialize
-    updateSlidePosition();
-
-    // Update on resize
-    window.addEventListener('resize', updateSlidePosition);
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    const quickNavItems = document.querySelectorAll('.quick-nav-item');
-    const sections = document.querySelectorAll('section[id]');
-
-    function setActiveQuickNavItem() {
-        const scrollPosition = window.scrollY + window.innerHeight / 2;
-        const navScroll = document.querySelector('.mobile-quick-nav-scroll');
-
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-            const sectionId = section.getAttribute('id');
-            
-            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-                quickNavItems.forEach(item => {
-                    item.classList.remove('active');
-                    if (item.getAttribute('href') === `#${sectionId}`) {
-                        item.classList.add('active');
-                        
-                        // Scroll the navigation to show active item
-                        const itemOffset = item.offsetLeft;
-                        const navScrollWidth = navScroll.clientWidth;
-                        const scrollPosition = itemOffset - (navScrollWidth / 2) + (item.offsetWidth / 2);
-                        
-                        navScroll.scrollTo({
-                            left: scrollPosition,
-                            behavior: 'smooth'
-                        });
-                    }
-                });
-            }
-        });
-    }
-
-    // Add a small delay to initial scroll to ensure proper positioning
-    window.addEventListener('load', () => {
-        setTimeout(setActiveQuickNavItem, 100);
-    });
-
-    // Update on scroll with throttling for better performance
-    let scrollTimeout;
-    window.addEventListener('scroll', () => {
-        if (scrollTimeout) {
-            window.cancelAnimationFrame(scrollTimeout);
-        }
-        scrollTimeout = window.requestAnimationFrame(() => {
-            setActiveQuickNavItem();
-        });
-    });
-
-    // Smooth scroll for quick nav items
-    quickNavItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href');
-            const targetSection = document.querySelector(targetId);
-            
-            targetSection.scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    const navScroll = document.querySelector('.mobile-quick-nav-scroll');
-    const prevArrow = document.querySelector('.nav-arrow.prev');
-    const nextArrow = document.querySelector('.nav-arrow.next');
-    
-    function updateArrows() {
-        const isScrollable = navScroll.scrollWidth > navScroll.clientWidth;
-        const isScrollStart = Math.abs(navScroll.scrollLeft) <= 1;
-        const isScrollEnd = Math.abs(navScroll.scrollLeft + navScroll.clientWidth - navScroll.scrollWidth) <= 1;
-
-        prevArrow.classList.toggle('show', isScrollable && !isScrollStart);
-        nextArrow.classList.toggle('show', isScrollable && !isScrollEnd);
-    }
-
-    // Scroll navigation with limits
-    nextArrow.addEventListener('click', () => {
-        const scrollAmount = Math.min(200, navScroll.scrollWidth - navScroll.clientWidth - navScroll.scrollLeft);
-        navScroll.scrollBy({ 
-            left: scrollAmount, 
-            behavior: 'smooth' 
-        });
-    });
-
-    prevArrow.addEventListener('click', () => {
-        const scrollAmount = Math.min(200, navScroll.scrollLeft);
-        navScroll.scrollBy({ 
-            left: -scrollAmount, 
-            behavior: 'smooth' 
-        });
-    });
-
-    // Update arrows on scroll
-    navScroll.addEventListener('scroll', updateArrows);
-    window.addEventListener('resize', updateArrows);
-    
-    // Initial arrow state
-    updateArrows();
-});
-
-// Wait for DOM to be fully loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize carousel
-    initializeCarousel();
-    
-    // Initialize scroll tracking for sections (if needed)
-    initSectionScrollTracking();
-});
-
-function initializeCarousel() {
     const carousel = document.querySelector('.carousel');
-    if (!carousel) return;
+    if (carousel) {
+        initCarousel(carousel);
+    }
 
+    const mobileNav = document.querySelector('.mobile-quick-nav');
+    if (mobileNav) {
+        initMobileNav(mobileNav);
+        
+        // Add resize event listener to handle mobile nav visibility
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                mobileNav.style.display = 'none';
+            } else {
+                // Recheck scroll position to determine visibility
+                const activeCasesSection = document.querySelector('.active-cases');
+                if (activeCasesSection) {
+                    const activeCasesMidpoint = activeCasesSection.offsetTop + (activeCasesSection.offsetHeight / 2);
+                    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+                    mobileNav.style.display = scrollPosition > activeCasesMidpoint ? 'flex' : 'none';
+                }
+            }
+        });
+        
+        // Add scroll listener for mobile nav visibility
+        const activeCasesSection = document.querySelector('.active-cases');
+        if (activeCasesSection) {
+            window.addEventListener('scroll', () => {
+                // Only proceed if window width is less than or equal to 1024px
+                if (window.innerWidth <= 1024) {
+                    const activeCasesMidpoint = activeCasesSection.offsetTop + (activeCasesSection.offsetHeight / 2);
+                    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+                    
+                    // Show mobile nav after half of active cases section
+                    if (scrollPosition > activeCasesMidpoint) {
+                        mobileNav.style.display = 'flex';
+                    } else {
+                        mobileNav.style.display = 'none';
+                    }
+                    
+                    // Handle footer positioning
+                    const footer = document.querySelector('.site-footer');
+                    if (footer && scrollPosition > activeCasesMidpoint) {
+                        const footerRect = footer.getBoundingClientRect();
+                        const windowHeight = window.innerHeight;
+                        
+                        if (footerRect.top <= windowHeight) {
+                            const distanceFromBottom = windowHeight - footerRect.top;
+                            mobileNav.style.bottom = `${distanceFromBottom}px`;
+                        } else {
+                            mobileNav.style.bottom = '0';
+                        }
+                    }
+                } else {
+                    // Hide mobile nav on larger screens
+                    mobileNav.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    initSectionTracking();
+});
+
+function initCarousel(carousel) {
     const track = carousel.querySelector('.carousel-track');
+    if (!track) return;
+
     const slides = Array.from(track.children);
-    const nextButton = document.querySelector('.carousel-button.next');
-    const prevButton = document.querySelector('.carousel-button.prev');
-    const dotsContainer = document.querySelector('.carousel-indicators');
+    if (!slides.length) return;
+
+    const nextButton = carousel.querySelector('.carousel-button.next');
+    const prevButton = carousel.querySelector('.carousel-button.prev');
+    const dotsContainer = carousel.querySelector('.carousel-indicators');
 
     let currentIndex = 0;
     const slidesToShow = window.innerWidth <= 768 ? 1 : 3;
-    
+    let autoplayInterval;
+    const autoplayDelay = 5000;
+
     function updateCarousel() {
-        // Calculate slide width based on viewport
-        const carouselWidth = carousel.offsetWidth;
-        const slideWidth = carouselWidth / slidesToShow;
+        const slideWidth = carousel.offsetWidth / slidesToShow;
         
-        // Set width for all slides
         slides.forEach(slide => {
-            slide.style.width = `${slideWidth}px`;
-            slide.style.flex = `0 0 ${slideWidth}px`;
+            if (slide) slide.style.width = `${slideWidth}px`;
         });
         
-        // Update track position
         const offset = -currentIndex * slideWidth;
         track.style.transform = `translateX(${offset}px)`;
         
-        // Update button states
-        if (prevButton && nextButton) {
-            prevButton.disabled = currentIndex === 0;
-            nextButton.disabled = currentIndex >= slides.length - slidesToShow;
-        }
+        if (prevButton) prevButton.disabled = currentIndex === 0;
+        if (nextButton) nextButton.disabled = currentIndex >= slides.length - slidesToShow;
         
-        // Update dots
         if (dotsContainer) {
             const dots = Array.from(dotsContainer.children);
             dots.forEach((dot, index) => {
@@ -363,8 +219,27 @@ function initializeCarousel() {
     }
 
     function moveToSlide(index) {
-        currentIndex = Math.max(0, Math.min(index, slides.length - slidesToShow));
+        if (index >= slides.length - slidesToShow + 1) {
+            index = 0;
+        } else if (index < 0) {
+            index = slides.length - slidesToShow;
+        }
+        currentIndex = index;
         updateCarousel();
+    }
+
+    function startAutoplay() {
+        stopAutoplay();
+        autoplayInterval = setInterval(() => {
+            moveToSlide(currentIndex + 1);
+        }, autoplayDelay);
+    }
+
+    function stopAutoplay() {
+        if (autoplayInterval) {
+            clearInterval(autoplayInterval);
+            autoplayInterval = null;
+        }
     }
 
     // Initialize dots
@@ -380,90 +255,265 @@ function initializeCarousel() {
             
             dot.addEventListener('click', () => {
                 moveToSlide(i * slidesToShow);
+                stopAutoplay();
+                startAutoplay();
             });
             
             dotsContainer.appendChild(dot);
         }
     }
 
-    // Button click handlers
+    // Set up navigation
     if (nextButton) {
         nextButton.addEventListener('click', () => {
-            if (currentIndex < slides.length - slidesToShow) {
-                moveToSlide(currentIndex + 1);
-            }
+            moveToSlide(currentIndex + 1);
+            stopAutoplay();
+            startAutoplay();
         });
     }
 
     if (prevButton) {
         prevButton.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                moveToSlide(currentIndex - 1);
+            moveToSlide(currentIndex - 1);
+            stopAutoplay();
+            startAutoplay();
+        });
+    }
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(updateCarousel, 250);
+    });
+
+    // Start carousel
+    updateCarousel();
+    startAutoplay();
+}
+
+function initMobileNav(mobileNav) {
+    const navScroll = mobileNav.querySelector('.mobile-quick-nav-scroll');
+    const prevArrow = mobileNav.querySelector('.nav-arrow.prev');
+    const nextArrow = mobileNav.querySelector('.nav-arrow.next');
+    
+    if (!navScroll || !prevArrow || !nextArrow) return;
+
+    function updateArrows() {
+        const isScrollable = navScroll.scrollWidth > navScroll.clientWidth;
+        const isScrollStart = Math.abs(navScroll.scrollLeft) <= 1;
+        const isScrollEnd = Math.abs(navScroll.scrollLeft + navScroll.clientWidth - navScroll.scrollWidth) <= 1;
+
+        prevArrow.classList.toggle('show', isScrollable && !isScrollStart);
+        nextArrow.classList.toggle('show', isScrollable && !isScrollEnd);
+    }
+
+    nextArrow.addEventListener('click', () => {
+        const scrollAmount = Math.min(200, navScroll.scrollWidth - navScroll.clientWidth - navScroll.scrollLeft);
+        navScroll.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    });
+
+    prevArrow.addEventListener('click', () => {
+        const scrollAmount = Math.min(200, navScroll.scrollLeft);
+        navScroll.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    });
+
+    navScroll.addEventListener('scroll', updateArrows);
+    window.addEventListener('resize', updateArrows);
+    updateArrows();
+}
+
+function initSectionTracking() {
+    const sections = Array.from(document.querySelectorAll('section[id]'));
+    const mobileNavItems = Array.from(document.querySelectorAll('.quick-nav-item'));
+    const desktopNavItems = Array.from(document.querySelectorAll('.content-nav a[href^="#"]'));
+    const mobileNav = document.querySelector('.mobile-quick-nav');
+    const footer = document.querySelector('.site-footer');
+    
+    if (!sections.length || (!mobileNavItems.length && !desktopNavItems.length)) return;
+
+    function updateActiveSection() {
+        const scrollPosition = window.scrollY + window.innerHeight / 3;
+        
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionBottom = sectionTop + section.offsetHeight;
+            const sectionId = section.id;
+            
+            if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+                // Update mobile nav
+                mobileNavItems.forEach(item => {
+                    const isActive = item.getAttribute('href') === `#${sectionId}`;
+                    item.classList.toggle('active', isActive);
+                });
+                
+                // Update desktop nav
+                desktopNavItems.forEach(item => {
+                    const isActive = item.getAttribute('href') === `#${sectionId}`;
+                    item.classList.toggle('active', isActive);
+                });
+
+                // Scroll active mobile nav item into view
+                const activeNavItem = document.querySelector('.quick-nav-item.active');
+                if (activeNavItem) {
+                    const navScroll = document.querySelector('.mobile-quick-nav-scroll');
+                    if (navScroll) {
+                        const itemLeft = activeNavItem.offsetLeft;
+                        const itemWidth = activeNavItem.offsetWidth;
+                        const navWidth = navScroll.offsetWidth;
+                        const targetScroll = itemLeft - (navWidth - itemWidth) / 2 + itemWidth / 2 - 40;
+                        navScroll.scrollTo({
+                            left: Math.max(0, targetScroll),
+                            behavior: 'smooth'
+                        });
+                    }
+                }
             }
         });
     }
 
-    // Touch events for mobile swipe
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    track.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
+    // Update active section on scroll
+    window.addEventListener('scroll', () => {
+        requestAnimationFrame(updateActiveSection);
     });
 
-    track.addEventListener('touchmove', (e) => {
-        touchEndX = e.touches[0].clientX;
-    });
-
-    track.addEventListener('touchend', () => {
-        const difference = touchStartX - touchEndX;
-        if (Math.abs(difference) > 50) { // Minimum swipe distance
-            if (difference > 0 && currentIndex < slides.length - slidesToShow) {
-                moveToSlide(currentIndex + 1);
-            } else if (difference < 0 && currentIndex > 0) {
-                moveToSlide(currentIndex - 1);
-            }
-        }
-    });
-
-    // Handle window resize
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-            const newSlidesToShow = window.innerWidth <= 768 ? 1 : 3;
-            if (slidesToShow !== newSlidesToShow) {
-                location.reload(); // Reload page if slidesToShow changes
-            } else {
-                updateCarousel(); // Otherwise just update positions
-            }
-        }, 250);
-    });
-
-    // Initialize carousel
-    updateCarousel();
+    // Initial update
+    updateActiveSection();
 }
 
-function initSectionScrollTracking() {
-    const sections = document.querySelectorAll('section[id]');
-    if (sections.length === 0) return;
-    
-    window.addEventListener('scroll', () => {
-        const scrollY = window.scrollY;
-        
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop - 100;
-            const sectionBottom = sectionTop + section.offsetHeight;
-            const id = section.getAttribute('id');
+// Handle mobile carousels
+function initMobileCarousels() {
+    const carousels = [
+        {
+            grid: document.querySelector('.risk-grid'),
+            dots: document.querySelector('.risk-scroll-dots')
+        },
+        {
+            grid: document.querySelector('.exposure-grid'),
+            dots: document.querySelector('.exposure-scroll-dots')
+        }
+    ];
+
+    carousels.forEach(({ grid, dots }) => {
+        if (!grid || !dots) return;
+
+        const updateDots = () => {
+            const scrollPosition = grid.scrollLeft;
+            const itemWidth = grid.querySelector('div').offsetWidth + 16; // 16px is the gap
+            const activeIndex = Math.round(scrollPosition / itemWidth);
             
-            const navItem = document.querySelector(`.quick-nav-item[href="#${id}"]`);
-            if (!navItem) return;
-            
-            if (scrollY >= sectionTop && scrollY < sectionBottom) {
-                navItem.classList.add('active');
-            } else {
-                navItem.classList.remove('active');
+            dots.querySelectorAll('.scroll-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === activeIndex);
+            });
+        };
+
+        // Update dots on scroll
+        grid.addEventListener('scroll', () => {
+            requestAnimationFrame(updateDots);
+        });
+
+        // Handle dot clicks
+        dots.querySelectorAll('.scroll-dot').forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                const itemWidth = grid.querySelector('div').offsetWidth + 16;
+                grid.scrollTo({
+                    left: index * itemWidth,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Initial update
+        updateDots();
+    });
+}
+
+// Initialize carousels when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    initMobileCarousels();
+});
+
+// Mobile Navigation
+document.addEventListener('DOMContentLoaded', function() {
+    const hamburger = document.querySelector('.hamburger-menu');
+    const navLinks = document.querySelector('.nav-links');
+    const navItems = document.querySelectorAll('.nav-item > a');
+
+    // Toggle mobile menu
+    hamburger?.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('active');
+        document.body.classList.toggle('nav-open');
+    });
+
+    // Handle dropdown toggles
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            if (window.innerWidth <= 1024) {
+                e.preventDefault();
+                const parent = item.parentElement;
+                const dropdown = parent.querySelector('.dropdown-menu');
+                const allDropdowns = document.querySelectorAll('.dropdown-menu');
+                const allSubmenus = document.querySelectorAll('.submenu');
+                
+                // Close other dropdowns
+                allDropdowns.forEach(d => {
+                    if (d !== dropdown) {
+                        d.classList.remove('active');
+                        d.previousElementSibling?.classList.remove('active');
+                    }
+                });
+                
+                // Close other submenus
+                allSubmenus.forEach(s => {
+                    if (!dropdown?.contains(s)) {
+                        s.classList.remove('active');
+                        s.previousElementSibling?.classList.remove('active');
+                    }
+                });
+                
+                // Toggle current dropdown
+                if (dropdown) {
+                    item.classList.toggle('active');
+                    dropdown.classList.toggle('active');
+                }
             }
         });
     });
-} 
+
+    // Handle submenu toggles
+    const submenuTriggers = document.querySelectorAll('.has-submenu > a');
+    submenuTriggers.forEach(trigger => {
+        trigger.addEventListener('click', (e) => {
+            if (window.innerWidth <= 1024) {
+                e.preventDefault();
+                e.stopPropagation();
+                const submenu = trigger.nextElementSibling;
+                const allSubmenus = document.querySelectorAll('.submenu');
+                
+                // Close other submenus at the same level
+                allSubmenus.forEach(s => {
+                    if (s !== submenu && s.parentElement.parentElement === submenu.parentElement.parentElement) {
+                        s.classList.remove('active');
+                        s.previousElementSibling?.classList.remove('active');
+                    }
+                });
+                
+                // Toggle current submenu
+                trigger.classList.toggle('active');
+                submenu.classList.toggle('active');
+            }
+        });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 1024 && 
+            !e.target.closest('.nav-links') && 
+            !e.target.closest('.hamburger-menu') && 
+            navLinks.classList.contains('active')) {
+            hamburger.classList.remove('active');
+            navLinks.classList.remove('active');
+            document.body.classList.remove('nav-open');
+        }
+    });
+}); 
